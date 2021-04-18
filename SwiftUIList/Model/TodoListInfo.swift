@@ -10,7 +10,7 @@ import Foundation
 struct TodoListInfo: Codable {
     var todos = [TodoItem]()
     
-    struct TodoItem: Codable, Identifiable {
+    struct TodoItem: Codable, Identifiable, Equatable {
         private(set) var id = UUID().uuidString
         var title = ""
         var description = ""
@@ -19,7 +19,7 @@ struct TodoListInfo: Codable {
         var isCompleted = false
     }
     
-    struct DueDate: Codable {
+    struct DueDate: Codable, Equatable {
         var year: Int
         var month: Int
         var day: Int

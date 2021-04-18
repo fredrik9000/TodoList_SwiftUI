@@ -21,18 +21,23 @@ struct TodoListView: View {
                     isActive: $isAddingNewItem) {
                     EmptyView()
                 }.hidden()
+
                 List {
                     ForEach(viewModel.listOfTodos) { todoItem in
-                        ItemCellView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)
+                        NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
+                            ItemCellView(todoItem: todoItem)
+                        }
+                        .animation(nil) // Prevent animating row internals
                     }
                     .onDelete {
                         viewModel.remove(indexSet: $0)
                     }
                 }
+                .animation(.easeInOut) // Adds animation to completed toggling and deletion
             }
             .navigationTitle("Things to do")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Button("Remove completed items") {
                             viewModel.removeCompleted()
@@ -61,16 +66,38 @@ struct TodoListView: View {
 }
 
 private struct ItemCellView: View {
-    var todoItem: TodoListInfo.TodoItem
-    @Binding var isAddingNewItem: Bool
-    
+    @EnvironmentObject var viewModel: TodoListViewModel
+    @State var todoItem: TodoListInfo.TodoItem
+
     var body: some View {
         HStack {
-            NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
-                Text(todoItem.title)
-            }
+            Toggle("Toggle completed", isOn: $todoItem.isCompleted)
+                .labelsHidden()
+                .onChange(of: todoItem) { value in
+                    viewModel.toggleCompleted(for: value)
+                }
+                .toggleStyle(CheckBoxToggleStyle(priority: $todoItem.priority))
+                .buttonStyle(PlainButtonStyle()) // In order to avoid navigating when toggling
+
+            Text(todoItem.title)
         }
-        .padding()
+        .padding(8)
+    }
+}
+
+private struct CheckBoxToggleStyle: ToggleStyle {
+    @Binding var priority: Int
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            Button {
+                configuration.isOn.toggle()
+            } label: {
+                Image(systemName: configuration.isOn ? "checkmark.square" : "square")
+            }
+            .padding(4)
+            .font(.title)
+            .foregroundColor(Priorities.getColor(for: priority))
+        }
     }
 }
 

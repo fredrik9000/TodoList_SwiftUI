@@ -49,8 +49,22 @@ class TodoListViewModel: ObservableObject {
     func removeAll() {
         todoListInfo.todos = []
     }
+
+    func toggleCompleted(for item: TodoListInfo.TodoItem) {
+        if let itemIndex = todoListInfo.todos.firstIndex(where: { $0.id == item.id }) {
+            todoListInfo.todos[itemIndex].isCompleted = !todoListInfo.todos[itemIndex].isCompleted
+        }
+    }
     
     private func calculateSortedBy(_ todoItemLeft: TodoListInfo.TodoItem, _ todoItemRight: TodoListInfo.TodoItem) -> Bool {
-        return todoItemLeft.priority > todoItemRight.priority || todoItemLeft.title <= todoItemRight.title
+        if todoItemLeft.isCompleted != todoItemRight.isCompleted {
+            return !todoItemLeft.isCompleted
+        } else if todoItemLeft.priority != todoItemRight.priority {
+            return todoItemLeft.priority > todoItemRight.priority
+        } else if todoItemLeft.title != todoItemRight.title {
+            return todoItemLeft.title < todoItemRight.title
+        } else {
+            return true
+        }
     }
 }

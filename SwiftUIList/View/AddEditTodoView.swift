@@ -23,10 +23,14 @@ struct AddEditTodoView: View {
             }
             Section(header: Text("Priority")) {
                 Picker(selection: $todoItem.priority, label: Text("Priority")) {
-                    Text("Low priority").tag(0)
-                    Text("Medium priority").tag(1)
-                    Text("High priority").tag(2)
+                    Text("Low priority").tag(Priorities.lowPriority)
+                        .foregroundColor(Priorities.getColor(for: Priorities.lowPriority))
+                    Text("Medium priority").tag(Priorities.mediumPriority)
+                        .foregroundColor(Priorities.getColor(for: Priorities.mediumPriority))
+                    Text("High priority").tag(Priorities.highPriority)
+                        .foregroundColor(Priorities.getColor(for: Priorities.highPriority))
                 }
+                .labelsHidden() // Some iOS bug prevents the label from being hidden, will hopefully be fixed
             }
         }
         .navigationTitle(Text("Edit task"))

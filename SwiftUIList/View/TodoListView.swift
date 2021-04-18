@@ -21,19 +21,26 @@ struct TodoListView: View {
                     isActive: $isAddingNewItem) {
                     EmptyView()
                 }.hidden()
-
-                List {
-                    ForEach(viewModel.listOfTodos) { todoItem in
-                        NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
-                            ItemCellView(todoItem: todoItem)
+                
+                if (viewModel.listOfTodos.count == 0) {
+                    Text("Add tasks by tapping the plus button")
+                        .font(.largeTitle)
+                        .offset(y: -50)
+                        .padding()
+                } else {
+                    List {
+                        ForEach(viewModel.listOfTodos) { todoItem in
+                            NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
+                                ItemCellView(todoItem: todoItem)
+                            }
+                            .animation(nil) // Prevent animating row internals
                         }
-                        .animation(nil) // Prevent animating row internals
+                        .onDelete {
+                            viewModel.remove(indexSet: $0)
+                        }
                     }
-                    .onDelete {
-                        viewModel.remove(indexSet: $0)
-                    }
+                    .animation(.easeInOut) // Adds animation to completed toggling and deletion
                 }
-                .animation(.easeInOut) // Adds animation to completed toggling and deletion
             }
             .navigationTitle("Things to do")
             .toolbar {
@@ -68,7 +75,7 @@ struct TodoListView: View {
 private struct ItemCellView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @State var todoItem: TodoListInfo.TodoItem
-
+    
     var body: some View {
         HStack {
             Toggle("Toggle completed", isOn: $todoItem.isCompleted)
@@ -78,7 +85,7 @@ private struct ItemCellView: View {
                 }
                 .toggleStyle(CheckBoxToggleStyle(priority: $todoItem.priority))
                 .buttonStyle(PlainButtonStyle()) // In order to avoid navigating when toggling
-
+            
             Text(todoItem.title)
         }
         .padding(8)

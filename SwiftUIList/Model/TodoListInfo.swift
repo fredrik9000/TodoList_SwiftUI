@@ -117,7 +117,37 @@ struct TodoListInfo: Codable {
     }
 }
 
+extension TodoListInfo.TodoItem {
+    func hasNotification() -> Bool {
+        return dueDate.notificationId.count > 0
+    }
+
+    func notificationIsExpired() -> Bool {
+        return dueDate.toSwiftDate().timeIntervalSinceNow.sign == .minus
+    }
+}
+
 extension TodoListInfo.DueDate {
+    func toSwiftDate() -> Date {
+        return Calendar.current.date(from: DateComponents(year: year,
+                                                          month: month,
+                                                          day: day,
+                                                          hour: hour,
+                                                          minute: minute))!
+    }
+
+    func fromSwiftDate(_ date: Date) -> TodoListInfo.DueDate {
+        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        return TodoListInfo.DueDate(
+            year: dateComponents.year!,
+            month: dateComponents.month!,
+            day: dateComponents.day!,
+            hour: dateComponents.hour!,
+            minute: dateComponents.minute!,
+            notificationId: "1"
+        )
+    }
+
     func formattedDateString() -> String {
         let components = DateComponents(year: self.year,
                                         month: self.month,

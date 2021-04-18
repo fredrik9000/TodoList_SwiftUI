@@ -22,7 +22,7 @@ struct TodoListView: View {
                     EmptyView()
                 }.hidden()
                 
-                if (viewModel.listOfTodos.count == 0) {
+                if viewModel.listOfTodos.count == 0 {
                     Text("Add tasks by tapping the plus button")
                         .font(.largeTitle)
                         .offset(y: -50)
@@ -31,7 +31,7 @@ struct TodoListView: View {
                     List {
                         ForEach(viewModel.listOfTodos) { todoItem in
                             NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
-                                ItemCellView(todoItem: todoItem)
+                                ListItemView(todoItem: todoItem)
                             }
                             .animation(nil) // Prevent animating row internals
                         }
@@ -68,42 +68,6 @@ struct TodoListView: View {
         .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             isAddingNewItem = false
-        }
-    }
-}
-
-private struct ItemCellView: View {
-    @EnvironmentObject var viewModel: TodoListViewModel
-    @State var todoItem: TodoListInfo.TodoItem
-    
-    var body: some View {
-        HStack {
-            Toggle("Toggle completed", isOn: $todoItem.isCompleted)
-                .labelsHidden()
-                .onChange(of: todoItem) { value in
-                    viewModel.toggleCompleted(for: value)
-                }
-                .toggleStyle(CheckBoxToggleStyle(priority: $todoItem.priority))
-                .buttonStyle(PlainButtonStyle()) // In order to avoid navigating when toggling
-            
-            Text(todoItem.title)
-        }
-        .padding(8)
-    }
-}
-
-private struct CheckBoxToggleStyle: ToggleStyle {
-    @Binding var priority: Int
-    func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            Button {
-                configuration.isOn.toggle()
-            } label: {
-                Image(systemName: configuration.isOn ? "checkmark.square" : "square")
-            }
-            .padding(4)
-            .font(.title)
-            .foregroundColor(Priorities.getColor(for: priority))
         }
     }
 }

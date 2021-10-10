@@ -9,29 +9,72 @@ import Foundation
 
 struct TodoListInfo: Codable {
     var todos = [TodoItem]()
-    
+
     struct TodoItem: Codable, Identifiable, Equatable {
         private(set) var id = UUID().uuidString
         var title = ""
         var description = ""
         var priority = Priorities.mediumPriority
-        var dueDate = DueDate(year: 0, month: 0, day: 0, hour: 0, minute: 0, notificationId: "")
         var isCompleted = false
+        var dueDate = DueDate(year: 0, month: 0, day: 0, hour: 0, minute: 0)
+        private(set) var notificationId = UUID().uuidString
+        var hasNotification = false
+
+        var dueDateIsValid: Bool {
+            dueDate.toSwiftDate().timeIntervalSinceNow.sign != .minus
+        }
+
+        mutating func generateNewId() {
+            id = UUID().uuidString
+        }
+
+        struct DueDate: Codable, Equatable {
+            var year: Int
+            var month: Int
+            var day: Int
+            var hour: Int
+            var minute: Int
+
+            func toSwiftDate() -> Date {
+                Calendar.current.date(from: DateComponents(year: year,
+                                                                  month: month,
+                                                                  day: day,
+                                                                  hour: hour,
+                                                                  minute: minute))!
+            }
+
+            func fromSwiftDate(_ date: Date) -> TodoListInfo.TodoItem.DueDate {
+                let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+                return TodoListInfo.TodoItem.DueDate(
+                    year: dateComponents.year!,
+                    month: dateComponents.month!,
+                    day: dateComponents.day!,
+                    hour: dateComponents.hour!,
+                    minute: dateComponents.minute!
+                )
+            }
+
+            func formattedDateString() -> String {
+                let components = DateComponents(year: self.year,
+                                                month: self.month,
+                                                day: self.day,
+                                                hour: self.hour,
+                                                minute: self.minute)
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMMM dd, yyyy 'at' HH:mm"
+                return formatter.string(from: Calendar(identifier: .gregorian).date(from: components)!)
+            }
+        }
     }
-    
-    struct DueDate: Codable, Equatable {
-        var year: Int
-        var month: Int
-        var day: Int
-        var hour: Int
-        var minute: Int
-        var notificationId: String
+
+    func index(of item: TodoItem) -> Int? {
+        todos.firstIndex(where: { $0.id == item.id })
     }
-    
+
     var json: Data? {
-        return try? JSONEncoder().encode(self)
+        try? JSONEncoder().encode(self)
     }
-    
+
     init?(json: Data) {
         if let newValue = try? JSONDecoder().decode(TodoListInfo.self, from: json) {
             self = newValue
@@ -39,7 +82,7 @@ struct TodoListInfo: Codable {
             return nil
         }
     }
-    
+
     // To make the SwiftUI preview work we need to use test data
     init(testData: Bool) {
         if !testData {
@@ -48,7 +91,7 @@ struct TodoListInfo: Codable {
             loadTestData()
         }
     }
-    
+
     mutating private func loadPersistedJsonData() {
         if let url = try? FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -61,7 +104,7 @@ struct TodoListInfo: Codable {
             }
         }
     }
-    
+
     static func persistTodoList(_ todoListInfo: TodoListInfo) {
         if let json = todoListInfo.json, let url = try? FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -72,15 +115,15 @@ struct TodoListInfo: Codable {
             do {
                 try json.write(to: url)
             } catch let error {
-                print("Couldn't save: \(error)")
+                print("Couldn't save, error: \(error)")
             }
         }
     }
-    
+
     // Test data for SwiftUI preview
     mutating private func loadTestData() {
         self.todos = [
-            TodoItem(title: "Medium priority taks",
+            TodoItem(title: "Medium priority task",
                      description: "Description for medium priority task",
                      priority: Priorities.mediumPriority,
                      isCompleted: false),
@@ -99,8 +142,8 @@ struct TodoListInfo: Codable {
             TodoItem(title: "Task with notification",
                      description: "Description for a task with a reminder",
                      priority: Priorities.mediumPriority,
-                     dueDate: DueDate(year: 2021, month: 05, day: 25, hour: 14, minute: 15, notificationId: "1"),
-                     isCompleted: false),
+                     isCompleted: false,
+                     dueDate: TodoItem.DueDate(year: 2021, month: 05, day: 25, hour: 14, minute: 15)),
             TodoItem(title: "Task with a long description",
                      description: "Description for a task with a long description. This descpription will span multiple lines on an iPhone.",
                      priority: Priorities.mediumPriority,
@@ -114,48 +157,5 @@ struct TodoListInfo: Codable {
                      priority: Priorities.lowPriority,
                      isCompleted: true)
         ]
-    }
-}
-
-extension TodoListInfo.TodoItem {
-    func hasNotification() -> Bool {
-        return dueDate.notificationId.count > 0
-    }
-
-    func notificationIsExpired() -> Bool {
-        return dueDate.toSwiftDate().timeIntervalSinceNow.sign == .minus
-    }
-}
-
-extension TodoListInfo.DueDate {
-    func toSwiftDate() -> Date {
-        return Calendar.current.date(from: DateComponents(year: year,
-                                                          month: month,
-                                                          day: day,
-                                                          hour: hour,
-                                                          minute: minute))!
-    }
-
-    func fromSwiftDate(_ date: Date) -> TodoListInfo.DueDate {
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        return TodoListInfo.DueDate(
-            year: dateComponents.year!,
-            month: dateComponents.month!,
-            day: dateComponents.day!,
-            hour: dateComponents.hour!,
-            minute: dateComponents.minute!,
-            notificationId: "1"
-        )
-    }
-
-    func formattedDateString() -> String {
-        let components = DateComponents(year: self.year,
-                                        month: self.month,
-                                        day: self.day,
-                                        hour: self.hour,
-                                        minute: self.minute)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM dd, yyyy 'at' HH:mm"
-        return formatter.string(from: Calendar(identifier: .gregorian).date(from: components)!)
     }
 }

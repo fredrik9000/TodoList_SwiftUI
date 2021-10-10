@@ -10,58 +10,42 @@ import SwiftUI
 struct TodoListView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @State private var isAddingNewItem = false
-    
+
     var body: some View {
         NavigationView {
-            // Due to a SwiftUI bug causing AddEditTodoView to be pushed again after pressing done,
-            // isActive based navigation is used.
             VStack(spacing: 0) {
+                // Due to a SwiftUI bug causing AddEditTodoView to be pushed again after pressing done,
+                // isActive based navigation is used.
                 NavigationLink(
                     destination: AddEditTodoView(todoItem: TodoListInfo.TodoItem(), isAddingNewItem: $isAddingNewItem),
                     isActive: $isAddingNewItem) {
                     EmptyView()
-                }.hidden()
-                
-                if viewModel.listOfTodos.count == 0 {
+                }
+                .hidden()
+
+                if viewModel.todoListIsEmpty {
                     Text("Add tasks by tapping the plus button")
                         .font(.largeTitle)
-                        .offset(y: -50)
+                        .offset(y: Constants.onboardingHeaderYOffset)
                         .padding()
                 } else {
                     List {
                         ForEach(viewModel.listOfTodos) { todoItem in
-                            NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
-                                ListItemView(todoItem: todoItem)
-                            }
-                            .animation(nil) // Prevent animating row internals
+                            ListItemView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)
                         }
                         .onDelete {
                             viewModel.remove(indexSet: $0)
                         }
                     }
-                    .animation(.easeInOut) // Adds animation to completed toggling and deletion
                 }
             }
             .navigationTitle("Things to do")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button("Remove completed items") {
-                            viewModel.removeCompleted()
-                        }
-                        Button("Remove all items") {
-                            viewModel.removeAll()
-                        }
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+                    deleteMenu
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        isAddingNewItem = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+                    addTodoButton
                 }
             }
         }
@@ -69,6 +53,37 @@ struct TodoListView: View {
         .onAppear {
             isAddingNewItem = false
         }
+    }
+
+    private var deleteMenu: some View {
+        return Menu {
+            Button("Remove completed items") {
+                withAnimation {
+                    viewModel.removeCompleted()
+                }
+            }
+            Button("Remove all items") {
+                withAnimation {
+                    viewModel.removeAll()
+                }
+            }
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
+    }
+
+    private var addTodoButton: some View {
+        Button {
+            withAnimation {
+                isAddingNewItem = true
+            }
+        } label: {
+            Image(systemName: "plus")
+        }
+    }
+
+    private struct Constants {
+        static let onboardingHeaderYOffset: CGFloat = -50
     }
 }
 

@@ -15,16 +15,7 @@ struct AddEditTodoView: View {
     @Binding var isAddingNewItem: Bool
     @State private var showNotificationExpiredDialog = false
     @State private var notificationIsNotAuthorized = false
-
-    private var dateSelected: Binding<Date> {
-        return Binding<Date>(
-            get: { return todoItem.dueDate.toSwiftDate() },
-            set: { date in
-                print("setting date to: \(date)")
-                todoItem.dueDate = todoItem.dueDate.fromSwiftDate(date)
-            }
-        )
-    }
+    @State private var insertOrUpdateNotification = false
 
     var body: some View {
         Form {
@@ -35,33 +26,12 @@ struct AddEditTodoView: View {
                 TextEditor(text: $todoItem.description)
             }
             Section(header: Text("Priority")) {
-                Picker(selection: $todoItem.priority, label: Text("Priority")) {
-                    Text("Low priority").tag(Priorities.lowPriority)
-                        .foregroundColor(Priorities.getColor(for: Priorities.lowPriority))
-                    Text("Medium priority").tag(Priorities.mediumPriority)
-                        .foregroundColor(Priorities.getColor(for: Priorities.mediumPriority))
-                    Text("High priority").tag(Priorities.highPriority)
-                        .foregroundColor(Priorities.getColor(for: Priorities.highPriority))
-                }
-                .labelsHidden() // Some SwiftUI bug prevents the label from being hidden, will hopefully be fixed
+                PrioritySectionView(priority: $todoItem.priority)
             }
             Section(header: Text("Reminder")) {
-                if todoItem.hasNotification() {
-                    DatePicker("Reminder", selection: dateSelected, in: Date()...)
-                        .labelsHidden()
-                }
-                // In order to get animation to work the same button is used for both adding and removing notifications
-                Button(todoItem.hasNotification() ? "Remove" : "Set reminder") {
-                    if todoItem.hasNotification() {
-                        todoItem.dueDate.notificationId = ""
-                    } else {
-                        todoItem.dueDate = todoItem.dueDate.fromSwiftDate(Date()) // Set initial date to the current date
-                        todoItem.dueDate.notificationId = UUID().uuidString
-                    }
-                }
-            }
-            .alert(isPresented: $notificationIsNotAuthorized) {
-                Alert(title: Text("You have added a notification but denied notifications for this app. Go to settings to enable."))
+                ReminderSectionView(todoItem: $todoItem, insertOrUpdateNotification: $insertOrUpdateNotification)
+            }.alert(isPresented: $notificationIsNotAuthorized) {
+                Alert(title: Text("You have added a notification but denied notifications for this app. Go to settings to enable notifications."))
             }
         }
         .animation(.easeInOut) // Animates notification toggling
@@ -72,21 +42,71 @@ struct AddEditTodoView: View {
                 Button("Done") {
                     handleDonePressed()
                 }
-                .disabled(todoItem.title == "")
+                .disabled(todoItem.title.isEmpty)
             }
         }
-        // In SwiftUI we cannot attach 2 alerts the same place, so one is attached here, and the other to the reminder section
+        // In SwiftUI we cannot attach 2 alerts at the same place, so one is attached here, and the other to the reminder section
         .alert(isPresented: $showNotificationExpiredDialog) {
             Alert(title: Text("Remove reminder or set a valid reminder date"))
         }
     }
 
+    private struct PrioritySectionView: View {
+        @Binding var priority: Int
+
+        var body: some View {
+            Picker(selection: $priority, label: Text("Priority")) {
+                Text("Low priority").tag(Priorities.lowPriority)
+                    .foregroundColor(Priorities.getColor(for: Priorities.lowPriority))
+                Text("Medium priority").tag(Priorities.mediumPriority)
+                    .foregroundColor(Priorities.getColor(for: Priorities.mediumPriority))
+                Text("High priority").tag(Priorities.highPriority)
+                    .foregroundColor(Priorities.getColor(for: Priorities.highPriority))
+            }
+            .labelsHidden() // Some SwiftUI bug prevents the label from being hidden, will hopefully be fixed
+        }
+    }
+
+    private struct ReminderSectionView: View {
+        @Binding var todoItem: TodoListInfo.TodoItem
+        @Binding var insertOrUpdateNotification: Bool
+
+        private var dateSelected: Binding<Date> {
+            Binding<Date>(
+                get: { return todoItem.dueDate.toSwiftDate() },
+                set: { date in
+                    todoItem.dueDate = todoItem.dueDate.fromSwiftDate(date)
+                }
+            )
+        }
+
+        var body: some View {
+            if (todoItem.dueDateIsValid && todoItem.hasNotification) || insertOrUpdateNotification {
+                DatePicker("Reminder", selection: dateSelected, in: Date()...).labelsHidden()
+            }
+            // In order to get animation to work the same button is used for both adding and removing notifications
+            Button((todoItem.dueDateIsValid && todoItem.hasNotification) || insertOrUpdateNotification ? "Remove" : "Set reminder") {
+                if !todoItem.dueDateIsValid {
+                    todoItem.dueDate = todoItem.dueDate.fromSwiftDate(Date()) // Set initial date to the current date
+                }
+
+                // In case we press remove on an existing notificaiton, reset values to false
+                if (todoItem.hasNotification) {
+                    todoItem.hasNotification = false
+                    insertOrUpdateNotification = false
+                } else {
+                    insertOrUpdateNotification.toggle()
+                }
+            }
+        }
+    }
+
     private func handleDonePressed() {
-        if todoItem.hasNotification() && todoItem.notificationIsExpired() {
+        if insertOrUpdateNotification && !todoItem.dueDateIsValid {
             showNotificationExpiredDialog = true
         } else {
-            if todoItem.hasNotification() {
-                UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+            if insertOrUpdateNotification && todoItem.dueDateIsValid {
+                UNUserNotificationCenter.current().getNotificationSettings { settings in
                     if settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional {
                         upsertItemAndPopView()
                     } else if settings.authorizationStatus == .notDetermined {
@@ -105,8 +125,14 @@ struct AddEditTodoView: View {
     }
 
     private func upsertItemAndPopView() {
+        if !todoItem.dueDateIsValid {
+            todoItem.hasNotification = false
+        } else if insertOrUpdateNotification {
+            todoItem.hasNotification = true
+        }
+
         DispatchQueue.main.async {
-            viewModel.upsert(item: todoItem)
+            viewModel.upsert(editedItem: todoItem)
             if isAddingNewItem {
                 isAddingNewItem = false
             } else {
@@ -133,7 +159,7 @@ struct AddEditTodoView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
             AddEditTodoView(todoItem: TodoListInfo.TodoItem(
-                                title: "Medium priority taks",
+                                title: "Medium priority task",
                                 description: "Description for medium priority task",
                                 priority: Priorities.mediumPriority),
                             isAddingNewItem: $isAddingNewItem)

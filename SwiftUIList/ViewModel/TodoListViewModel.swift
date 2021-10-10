@@ -12,40 +12,50 @@ import UserNotifications
 class TodoListViewModel: ObservableObject {
     @Published private var todoListInfo: TodoListInfo
     private var autoSaveCancellable: AnyCancellable?
-    
+
     init(testData: Bool = false) {
         todoListInfo = TodoListInfo(testData: testData)
         autoSaveCancellable = $todoListInfo.sink {
             TodoListInfo.persistTodoList($0)
         }
     }
-    
+
+    var todoListIsEmpty: Bool {
+        todoListInfo.todos.isEmpty
+    }
+
     var listOfTodos: [TodoListInfo.TodoItem] {
         todoListInfo.todos.sorted(by: { calculateSortedBy($0, $1) })
     }
-    
-    func upsert(item: TodoListInfo.TodoItem) {
-        if let itemIndex = todoListInfo.todos.firstIndex(where: { $0.id == item.id }) {
-            if todoListInfo.todos[itemIndex].hasNotification() &&
-                    todoListInfo.todos[itemIndex].dueDate.notificationId != item.dueDate.notificationId {
+
+    func upsert(editedItem: TodoListInfo.TodoItem) {
+        if let itemIndex = todoListInfo.index(of: editedItem) {
+            // Remove existing notification when updating with a new one or simply removing the existing
+            if (todoListInfo.todos[itemIndex].hasNotification && (!editedItem.hasNotification || todoListInfo.todos[itemIndex].dueDate != editedItem.dueDate)) {
                 removeNotificationIfPresent(for: todoListInfo.todos[itemIndex])
-                addNotificationIfSet(for: item)
             }
-            todoListInfo.todos[itemIndex] = item
+            addNotification(for: editedItem)
+
+            // SwiftUI 2 Lists wont be able to notice changes when updating non-id values of an existing array item.
+            // To make refresh work we also update the id. This could be fixed in future versions.
+            var itemCopy = editedItem
+            itemCopy.generateNewId()
+            todoListInfo.todos[itemIndex] = itemCopy
         } else {
-            addNotificationIfSet(for: item)
-            todoListInfo.todos.append(item)
-            todoListInfo.todos.sort(by: { calculateSortedBy($0, $1) })
+            addNotification(for: editedItem)
+            todoListInfo.todos.append(editedItem)
         }
     }
-    
+
     func remove(indexSet: IndexSet) {
+        // Make sure the list is sorted, as it is in the UI
+        todoListInfo.todos.sort(by: { calculateSortedBy($0, $1) })
         indexSet.forEach {
             removeNotificationIfPresent(for: todoListInfo.todos[$0])
         }
         todoListInfo.todos.remove(atOffsets: indexSet)
     }
-    
+
     func removeCompleted() {
         todoListInfo.todos = todoListInfo.todos.filter {
             if $0.isCompleted {
@@ -56,7 +66,7 @@ class TodoListViewModel: ObservableObject {
             }
         }
     }
-    
+
     func removeAll() {
         todoListInfo.todos.forEach {
             removeNotificationIfPresent(for: $0)
@@ -65,16 +75,21 @@ class TodoListViewModel: ObservableObject {
     }
 
     private func removeNotificationIfPresent(for item: TodoListInfo.TodoItem) {
-        if item.hasNotification() {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [item.dueDate.notificationId])
-            if let itemIndex = todoListInfo.todos.firstIndex(where: { $0.id == item.id }) {
-                todoListInfo.todos[itemIndex].dueDate.notificationId = ""
+        if item.hasNotification && item.dueDateIsValid {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [item.notificationId])
+            if let itemIndex = todoListInfo.index(of: item) {
+                // List in SwiftUI 2 wont update unless id is set
+                // Creating a copy to avoid publishing twice
+                var itemCopy = todoListInfo.todos[itemIndex]
+                itemCopy.hasNotification = false
+                itemCopy.generateNewId()
+                todoListInfo.todos[itemIndex] = itemCopy
             }
         }
     }
 
-    private func addNotificationIfSet(for item: TodoListInfo.TodoItem) {
-        guard item.hasNotification() else { return }
+    private func addNotification(for item: TodoListInfo.TodoItem) {
+        guard item.hasNotification else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Task reminder"
@@ -82,7 +97,7 @@ class TodoListViewModel: ObservableObject {
         content.sound = .default
 
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: item.dueDate.notificationId,
+            UNNotificationRequest(identifier: item.notificationId,
                                   content: content,
                                   trigger: UNCalendarNotificationTrigger(
                                     dateMatching: DateComponents(year: item.dueDate.year,
@@ -94,19 +109,22 @@ class TodoListViewModel: ObservableObject {
         ) { (error) in
             if error != nil {
                 // Some error happened, resetting notification id
-                if let itemIndex = self.todoListInfo.todos.firstIndex(where: { $0.id == item.id }) {
-                    self.todoListInfo.todos[itemIndex].dueDate.notificationId = ""
+                if let itemIndex = self.todoListInfo.index(of: item) {
+                    self.todoListInfo.todos[itemIndex].hasNotification = false
                 }
             }
         }
     }
 
-    func toggleCompleted(for item: TodoListInfo.TodoItem) {
-        if let itemIndex = todoListInfo.todos.firstIndex(where: { $0.id == item.id }) {
-            todoListInfo.todos[itemIndex].isCompleted = !todoListInfo.todos[itemIndex].isCompleted
+    func setCompletedState(for item: TodoListInfo.TodoItem) {
+        if let itemIndex = todoListInfo.index(of: item) {
+            todoListInfo.todos[itemIndex].isCompleted = item.isCompleted
+            if todoListInfo.todos[itemIndex].isCompleted {
+                removeNotificationIfPresent(for: item)
+            }
         }
     }
-    
+
     private func calculateSortedBy(_ todoItemLeft: TodoListInfo.TodoItem, _ todoItemRight: TodoListInfo.TodoItem) -> Bool {
         if todoItemLeft.isCompleted != todoItemRight.isCompleted {
             return !todoItemLeft.isCompleted

@@ -10,6 +10,20 @@ import SwiftUI
 struct TodoListView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @State private var isAddingNewItem = false
+    @State private var searchText = ""
+
+    /*
+     // Adding animation to the binding causes a race condition for what's shown when typing quickly
+     private var searchBinding: Binding<String> {
+        Binding<String>(
+            get: { return self.searchText },
+            set: { newSearchText in
+                withAnimation {
+                    self.searchText = newSearchText
+                }
+            }
+        )
+    }*/
 
     var body: some View {
         NavigationView {
@@ -23,6 +37,8 @@ struct TodoListView: View {
                 }
                 .hidden()
 
+                SearchBar(text: $searchText)
+
                 if viewModel.todoListIsEmpty {
                     Text("Add tasks by tapping the plus button")
                         .font(.largeTitle)
@@ -30,7 +46,7 @@ struct TodoListView: View {
                         .padding()
                 } else {
                     List {
-                        ForEach(viewModel.listOfTodos) { todoItem in
+                        ForEach(viewModel.filteredListOfTodosByTitle(searchText)) { todoItem in
                             ListItemView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)
                         }
                         .onDelete {

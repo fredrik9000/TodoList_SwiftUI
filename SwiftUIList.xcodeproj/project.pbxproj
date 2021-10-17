@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		205529ED271C53CF00DB291C /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 205529EC271C53CF00DB291C /* SearchBar.swift */; };
 		20587690262B07F700CF6292 /* Priorities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2058768F262B07F700CF6292 /* Priorities.swift */; };
 		20A32E592621BEF9009396C2 /* SwiftUIListApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A32E582621BEF9009396C2 /* SwiftUIListApp.swift */; };
 		20A32E5B2621BEF9009396C2 /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A32E5A2621BEF9009396C2 /* TodoListView.swift */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		205529EC271C53CF00DB291C /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		2058768F262B07F700CF6292 /* Priorities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Priorities.swift; sourceTree = "<group>"; };
 		20A32E552621BEF9009396C2 /* SwiftUIList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUIList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20A32E582621BEF9009396C2 /* SwiftUIListApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIListApp.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 				20A32E5A2621BEF9009396C2 /* TodoListView.swift */,
 				20FDB80D262C86CD00FA4EAE /* ListItemView.swift */,
 				20A32E712621D081009396C2 /* AddEditTodoView.swift */,
+				205529EC271C53CF00DB291C /* SearchBar.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -182,6 +185,7 @@
 				20587690262B07F700CF6292 /* Priorities.swift in Sources */,
 				20A32E5B2621BEF9009396C2 /* TodoListView.swift in Sources */,
 				20A32E6B2621BF83009396C2 /* TodoListInfo.swift in Sources */,
+				205529ED271C53CF00DB291C /* SearchBar.swift in Sources */,
 				20A32E722621D081009396C2 /* AddEditTodoView.swift in Sources */,
 				20A32E592621BEF9009396C2 /* SwiftUIListApp.swift in Sources */,
 			);

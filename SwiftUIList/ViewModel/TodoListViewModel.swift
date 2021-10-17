@@ -24,8 +24,8 @@ class TodoListViewModel: ObservableObject {
         todoListInfo.todos.isEmpty
     }
 
-    var listOfTodos: [TodoListInfo.TodoItem] {
-        todoListInfo.todos.sorted(by: { calculateSortedBy($0, $1) })
+    func filteredListOfTodosByTitle(_ searchText: String) -> [TodoListInfo.TodoItem] {
+        todoListInfo.todos.filter { searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased()) }.sorted { calculateSortedBy($0, $1) }
     }
 
     func upsert(editedItem: TodoListInfo.TodoItem) {

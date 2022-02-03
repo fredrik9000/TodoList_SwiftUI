@@ -6,18 +6,17 @@
 //
 
 import Foundation
-import Combine
 import UserNotifications
 
 class TodoListViewModel: ObservableObject {
-    @Published private var todoListInfo: TodoListInfo
-    private var autoSaveCancellable: AnyCancellable?
+    @Published private var todoListInfo: TodoListInfo {
+        didSet {
+            TodoListInfo.persistTodoList(todoListInfo)
+        }
+    }
 
     init(testData: Bool = false) {
         todoListInfo = TodoListInfo(testData: testData)
-        autoSaveCancellable = $todoListInfo.sink {
-            TodoListInfo.persistTodoList($0)
-        }
     }
 
     var todoListIsEmpty: Bool {
@@ -36,7 +35,7 @@ class TodoListViewModel: ObservableObject {
             }
             addNotification(for: editedItem)
 
-            // SwiftUI 2 Lists wont be able to notice changes when updating non-id values of an existing array item.
+            // SwiftUI 2/3 Lists wont be able to notice changes when updating non-id values of an existing array item.
             // To make refresh work we also update the id. This could be fixed in future versions.
             var itemCopy = editedItem
             itemCopy.generateNewId()
@@ -78,7 +77,7 @@ class TodoListViewModel: ObservableObject {
         if item.hasNotification && item.dueDateIsValid {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [item.notificationId])
             if let itemIndex = todoListInfo.index(of: item) {
-                // List in SwiftUI 2 wont update unless id is set
+                // List in SwiftUI 2/3 wont update unless id is set
                 // Creating a copy to avoid publishing twice
                 var itemCopy = todoListInfo.todos[itemIndex]
                 itemCopy.hasNotification = false

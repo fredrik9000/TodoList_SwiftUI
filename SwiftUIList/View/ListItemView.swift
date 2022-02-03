@@ -10,7 +10,6 @@ import SwiftUI
 struct ListItemView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @State var todoItem: TodoListInfo.TodoItem
-    @Binding var isAddingNewItem: Bool
 
     var body: some View {
         HStack {
@@ -24,7 +23,7 @@ struct ListItemView: View {
                 .toggleStyle(CheckBoxToggleStyle(priority: $todoItem.priority))
                 .buttonStyle(PlainButtonStyle()) // In order to avoid triggering navigation when toggling
 
-            NavigationLink(destination: AddEditTodoView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)) {
+            NavigationLink(destination: AddEditTodoView(todoItem: todoItem)) {
                 VStack(alignment: .leading, spacing: Constants.listItemTextVerticalSpacing) {
                     Text(todoItem.title)
 
@@ -68,12 +67,12 @@ struct ListItemView_Previews: PreviewProvider {
         ListItemView(todoItem: TodoListInfo.TodoItem(
                         title: "Medium priority task",
                         description: "Description for medium priority task",
-                        priority: Priorities.mediumPriority), isAddingNewItem: $isAddingNewItem)
+                        priority: Priorities.mediumPriority))
 
         ListItemView(todoItem: TodoListInfo.TodoItem(
                         title: "Completed task",
                         description: "Description for completed priority task",
                         priority: Priorities.mediumPriority,
-                        isCompleted: true), isAddingNewItem: $isAddingNewItem)
+                        isCompleted: true))
     }
 }

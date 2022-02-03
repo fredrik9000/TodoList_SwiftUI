@@ -9,7 +9,6 @@ import SwiftUI
 
 struct TodoListView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
-    @State private var isAddingNewItem = false
     @State private var searchText = ""
 
     private var searchBinding: Binding<String> {
@@ -26,15 +25,6 @@ struct TodoListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Due to a SwiftUI bug causing AddEditTodoView to be pushed again after pressing done,
-                // isActive based navigation is used.
-                NavigationLink(
-                    destination: AddEditTodoView(todoItem: TodoListInfo.TodoItem(), isAddingNewItem: $isAddingNewItem),
-                    isActive: $isAddingNewItem) {
-                    EmptyView()
-                }
-                .hidden()
-
                 if viewModel.todoListIsEmpty {
                     Text("Add tasks by tapping the plus button")
                         .font(.largeTitle)
@@ -43,7 +33,7 @@ struct TodoListView: View {
                 } else {
                     List {
                         ForEach(viewModel.filteredListOfTodosByTitle(searchText)) { todoItem in
-                            ListItemView(todoItem: todoItem, isAddingNewItem: $isAddingNewItem)
+                            ListItemView(todoItem: todoItem)
                         }
                         .onDelete {
                             viewModel.remove(indexSet: $0)
@@ -58,14 +48,13 @@ struct TodoListView: View {
                     deleteMenu
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    addTodoButton
+                    NavigationLink(destination: AddEditTodoView(todoItem: TodoListInfo.TodoItem())) {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear {
-            isAddingNewItem = false
-        }
     }
 
     private var deleteMenu: some View {
@@ -82,16 +71,6 @@ struct TodoListView: View {
             }
         } label: {
             Label("Delete", systemImage: "trash")
-        }
-    }
-
-    private var addTodoButton: some View {
-        Button {
-            withAnimation {
-                isAddingNewItem = true
-            }
-        } label: {
-            Image(systemName: "plus")
         }
     }
 

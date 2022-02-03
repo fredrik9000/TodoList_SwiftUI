@@ -12,7 +12,6 @@ struct AddEditTodoView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @Environment(\.presentationMode) var presentationMode
     @State var todoItem: TodoListInfo.TodoItem
-    @Binding var isAddingNewItem: Bool
     @State private var showNotificationExpiredDialog = false
     @State private var notificationIsNotAuthorized = false
     @State private var insertOrUpdateNotification = false
@@ -134,11 +133,7 @@ struct AddEditTodoView: View {
 
         DispatchQueue.main.async {
             viewModel.upsert(editedItem: todoItem)
-            if isAddingNewItem {
-                isAddingNewItem = false
-            } else {
-                presentationMode.wrappedValue.dismiss()
-            }
+            presentationMode.wrappedValue.dismiss()
         }
     }
 
@@ -162,8 +157,7 @@ struct AddEditTodoView_Previews: PreviewProvider {
             AddEditTodoView(todoItem: TodoListInfo.TodoItem(
                                 title: "Medium priority task",
                                 description: "Description for medium priority task",
-                                priority: Priorities.mediumPriority),
-                            isAddingNewItem: $isAddingNewItem)
+                                priority: Priorities.mediumPriority))
         }
     }
 }

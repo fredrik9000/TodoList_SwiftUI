@@ -12,9 +12,7 @@ struct TodoListView: View {
     @State private var isAddingNewItem = false
     @State private var searchText = ""
 
-    /*
-     // Adding animation to the binding causes a race condition for what's shown when typing quickly
-     private var searchBinding: Binding<String> {
+    private var searchBinding: Binding<String> {
         Binding<String>(
             get: { return self.searchText },
             set: { newSearchText in
@@ -23,7 +21,7 @@ struct TodoListView: View {
                 }
             }
         )
-    }*/
+    }
 
     var body: some View {
         NavigationView {
@@ -36,8 +34,6 @@ struct TodoListView: View {
                     EmptyView()
                 }
                 .hidden()
-
-                SearchBar(text: $searchText)
 
                 if viewModel.todoListIsEmpty {
                     Text("Add tasks by tapping the plus button")
@@ -53,6 +49,7 @@ struct TodoListView: View {
                             viewModel.remove(indexSet: $0)
                         }
                     }
+                    .searchable(text: searchBinding)
                 }
             }
             .navigationTitle("Things to do")

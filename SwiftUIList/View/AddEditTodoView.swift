@@ -34,7 +34,6 @@ struct AddEditTodoView: View {
                 Alert(title: Text("You have added a notification but denied notifications for this app. Go to settings to enable notifications."))
             }
         }
-        .animation(.easeInOut) // Animates notification toggling
         .navigationTitle(Text("Edit task"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -84,18 +83,20 @@ struct AddEditTodoView: View {
             if (todoItem.dueDateIsValid && todoItem.hasNotification) || insertOrUpdateNotification {
                 DatePicker("Reminder", selection: dateSelected, in: Date()...).labelsHidden()
             }
-            // In order to get animation to work the same button is used for both adding and removing notifications
-            Button((todoItem.dueDateIsValid && todoItem.hasNotification) || insertOrUpdateNotification ? "Remove" : "Set reminder") {
-                if !todoItem.dueDateIsValid {
-                    todoItem.dueDate = todoItem.dueDate.fromSwiftDate(Date()) // Set initial date to the current date
-                }
 
-                // In case we press remove on an existing notificaiton, reset values to false
-                if (todoItem.hasNotification) {
-                    todoItem.hasNotification = false
-                    insertOrUpdateNotification = false
-                } else {
-                    insertOrUpdateNotification.toggle()
+            Button((todoItem.dueDateIsValid && todoItem.hasNotification) || insertOrUpdateNotification ? "Remove" : "Set reminder") {
+                withAnimation(.easeInOut) {
+                    if !todoItem.dueDateIsValid {
+                        todoItem.dueDate = todoItem.dueDate.fromSwiftDate(Date()) // Set initial date to the current date
+                    }
+
+                    // In case we press remove on an existing notificaiton, reset values to false
+                    if (todoItem.hasNotification) {
+                        todoItem.hasNotification = false
+                        insertOrUpdateNotification = false
+                    } else {
+                        insertOrUpdateNotification.toggle()
+                    }
                 }
             }
         }

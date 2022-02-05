@@ -14,7 +14,7 @@ struct TodoListInfo: Codable {
         private(set) var id = UUID().uuidString
         var title = ""
         var description = ""
-        var priority = Priorities.mediumPriority
+        var priority = Priority.medium.rawValue
         var isCompleted = false
         var dueDate = DueDate(year: 0, month: 0, day: 0, hour: 0, minute: 0)
         private(set) var notificationId = UUID().uuidString
@@ -125,36 +125,36 @@ struct TodoListInfo: Codable {
         self.todos = [
             TodoItem(title: "Medium priority task",
                      description: "Description for medium priority task",
-                     priority: Priorities.mediumPriority,
+                     priority: Priority.medium.rawValue,
                      isCompleted: false),
             TodoItem(title: "High priority taks",
                      description: "Description for high priority task",
-                     priority: Priorities.highPriority,
+                     priority: Priority.high.rawValue,
                      isCompleted: false),
             TodoItem(title: "Low priority taks",
                      description: "Description for low priority task",
-                     priority: Priorities.lowPriority,
+                     priority: Priority.low.rawValue,
                      isCompleted: false),
             TodoItem(title: "High priority completed",
                      description: "Description for a completed high priority task",
-                     priority: Priorities.highPriority,
+                     priority: Priority.high.rawValue,
                      isCompleted: true),
             TodoItem(title: "Task with notification",
                      description: "Description for a task with a reminder",
-                     priority: Priorities.mediumPriority,
+                     priority: Priority.medium.rawValue,
                      isCompleted: false,
                      dueDate: TodoItem.DueDate(year: 2021, month: 05, day: 25, hour: 14, minute: 15)),
             TodoItem(title: "Task with a long description",
                      description: "Description for a task with a long description. This descpription will span multiple lines on an iPhone.",
-                     priority: Priorities.mediumPriority,
+                     priority: Priority.medium.rawValue,
                      isCompleted: true),
             TodoItem(title: "Medium priority completed",
                      description: "Description for a completed medium priority task",
-                     priority: Priorities.mediumPriority,
+                     priority: Priority.medium.rawValue,
                      isCompleted: true),
             TodoItem(title: "Low priority completed",
                      description: "Description for a completed low priority task",
-                     priority: Priorities.lowPriority,
+                     priority: Priority.low.rawValue,
                      isCompleted: true)
         ]
     }

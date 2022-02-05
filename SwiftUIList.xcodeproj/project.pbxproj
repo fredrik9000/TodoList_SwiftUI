@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		20587690262B07F700CF6292 /* Priorities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2058768F262B07F700CF6292 /* Priorities.swift */; };
+		20587690262B07F700CF6292 /* Priority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2058768F262B07F700CF6292 /* Priority.swift */; };
 		20A32E592621BEF9009396C2 /* SwiftUIListApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A32E582621BEF9009396C2 /* SwiftUIListApp.swift */; };
 		20A32E5B2621BEF9009396C2 /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A32E5A2621BEF9009396C2 /* TodoListView.swift */; };
 		20A32E5D2621BEFA009396C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20A32E5C2621BEFA009396C2 /* Assets.xcassets */; };
@@ -19,7 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2058768F262B07F700CF6292 /* Priorities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Priorities.swift; sourceTree = "<group>"; };
+		2058768F262B07F700CF6292 /* Priority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Priority.swift; sourceTree = "<group>"; };
 		20A32E552621BEF9009396C2 /* SwiftUIList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUIList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20A32E582621BEF9009396C2 /* SwiftUIListApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIListApp.swift; sourceTree = "<group>"; };
 		20A32E5A2621BEF9009396C2 /* TodoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListView.swift; sourceTree = "<group>"; };
@@ -69,7 +69,6 @@
 				20A32E5C2621BEFA009396C2 /* Assets.xcassets */,
 				20A32E612621BEFA009396C2 /* Info.plist */,
 				20A32E5E2621BEFA009396C2 /* Preview Content */,
-				2058768F262B07F700CF6292 /* Priorities.swift */,
 			);
 			path = SwiftUIList;
 			sourceTree = "<group>";
@@ -85,6 +84,7 @@
 		20A32E692621BF74009396C2 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				2058768F262B07F700CF6292 /* Priority.swift */,
 				20A32E6A2621BF83009396C2 /* TodoListInfo.swift */,
 			);
 			path = Model;
@@ -179,7 +179,7 @@
 			files = (
 				20A32E6F2621C253009396C2 /* TodoListViewModel.swift in Sources */,
 				20FDB80E262C86CD00FA4EAE /* ListItemView.swift in Sources */,
-				20587690262B07F700CF6292 /* Priorities.swift in Sources */,
+				20587690262B07F700CF6292 /* Priority.swift in Sources */,
 				20A32E5B2621BEF9009396C2 /* TodoListView.swift in Sources */,
 				20A32E6B2621BF83009396C2 /* TodoListInfo.swift in Sources */,
 				20A32E722621D081009396C2 /* AddEditTodoView.swift in Sources */,

@@ -54,12 +54,12 @@ struct AddEditTodoView: View {
 
         var body: some View {
             Picker(selection: $priority, label: Text("Priority")) {
-                Text("Low priority").tag(Priorities.lowPriority)
-                    .foregroundColor(Priorities.getColor(for: Priorities.lowPriority))
-                Text("Medium priority").tag(Priorities.mediumPriority)
-                    .foregroundColor(Priorities.getColor(for: Priorities.mediumPriority))
-                Text("High priority").tag(Priorities.highPriority)
-                    .foregroundColor(Priorities.getColor(for: Priorities.highPriority))
+                Text(Priority.low.title).tag(Priority.low.rawValue)
+                    .foregroundColor(Priority.low.color)
+                Text(Priority.medium.title).tag(Priority.medium.rawValue)
+                    .foregroundColor(Priority.medium.color)
+                Text(Priority.high.title).tag(Priority.high.rawValue)
+                    .foregroundColor(Priority.high.color)
             }
             .labelsHidden() // Some SwiftUI bug prevents the label from being hidden, will hopefully be fixed
         }
@@ -157,7 +157,7 @@ struct AddEditTodoView_Previews: PreviewProvider {
             AddEditTodoView(todoItem: TodoListInfo.TodoItem(
                                 title: "Medium priority task",
                                 description: "Description for medium priority task",
-                                priority: Priorities.mediumPriority))
+                                priority: Priority.medium.rawValue))
         }
     }
 }

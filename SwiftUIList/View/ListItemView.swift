@@ -53,7 +53,7 @@ private struct CheckBoxToggleStyle: ToggleStyle {
         }
         .padding(Constants.completedCheckBoxPadding)
         .font(.title)
-        .foregroundColor(Priorities.getColor(for: priority))
+        .foregroundColor(Priority(rawValue: priority)!.color)
     }
 
     private struct Constants {
@@ -67,12 +67,12 @@ struct ListItemView_Previews: PreviewProvider {
         ListItemView(todoItem: TodoListInfo.TodoItem(
                         title: "Medium priority task",
                         description: "Description for medium priority task",
-                        priority: Priorities.mediumPriority))
+                        priority: Priority.medium.rawValue))
 
         ListItemView(todoItem: TodoListInfo.TodoItem(
                         title: "Completed task",
                         description: "Description for completed priority task",
-                        priority: Priorities.mediumPriority,
+                        priority: Priority.medium.rawValue,
                         isCompleted: true))
     }
 }

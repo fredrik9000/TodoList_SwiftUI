@@ -34,12 +34,7 @@ class TodoListViewModel: ObservableObject {
                 removeNotificationIfPresent(for: todoListInfo.todos[itemIndex])
             }
             addNotification(for: editedItem)
-
-            // SwiftUI 2/3 Lists wont be able to notice changes when updating non-id values of an existing array item.
-            // To make refresh work we also update the id. This could be fixed in future versions.
-            var itemCopy = editedItem
-            itemCopy.generateNewId()
-            todoListInfo.todos[itemIndex] = itemCopy
+            todoListInfo.todos[itemIndex] = editedItem
         } else {
             addNotification(for: editedItem)
             todoListInfo.todos.append(editedItem)
@@ -77,12 +72,7 @@ class TodoListViewModel: ObservableObject {
         if item.hasNotification && item.dueDateIsValid {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [item.notificationId])
             if let itemIndex = todoListInfo.index(of: item) {
-                // List in SwiftUI 2/3 wont update unless id is set
-                // Creating a copy to avoid publishing twice
-                var itemCopy = todoListInfo.todos[itemIndex]
-                itemCopy.hasNotification = false
-                itemCopy.generateNewId()
-                todoListInfo.todos[itemIndex] = itemCopy
+                todoListInfo.todos[itemIndex].hasNotification = false
             }
         }
     }
@@ -115,10 +105,10 @@ class TodoListViewModel: ObservableObject {
         }
     }
 
-    func setCompletedState(for item: TodoListInfo.TodoItem) {
+    func setCompletedState(for item: TodoListInfo.TodoItem, isCompleted: Bool) {
         if let itemIndex = todoListInfo.index(of: item) {
-            todoListInfo.todos[itemIndex].isCompleted = item.isCompleted
-            if todoListInfo.todos[itemIndex].isCompleted {
+            todoListInfo.todos[itemIndex].isCompleted = isCompleted
+            if isCompleted {
                 removeNotificationIfPresent(for: item)
             }
         }

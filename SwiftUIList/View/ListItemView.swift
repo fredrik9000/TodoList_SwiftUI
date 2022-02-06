@@ -9,18 +9,26 @@ import SwiftUI
 
 struct ListItemView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
-    @State var todoItem: TodoListInfo.TodoItem
+    private var todoItem: TodoListInfo.TodoItem
+    // Using @State for the whole todoItem for some reason causes the list(in UI)
+    // not to update itself with the latest values when saving from AddEditTodoView
+    @State private var isCompleted: Bool
+    
+    init(todoItem: TodoListInfo.TodoItem) {
+        self.todoItem = todoItem
+        self.isCompleted = todoItem.isCompleted
+    }
 
     var body: some View {
         HStack {
-            Toggle("Toggle completed", isOn: $todoItem.isCompleted)
+            Toggle("Toggle completed", isOn: $isCompleted)
                 .labelsHidden()
-                .onChange(of: todoItem.isCompleted) { _ in
+                .onChange(of: isCompleted) { _ in
                     withAnimation {
-                        viewModel.setCompletedState(for: todoItem)
+                        viewModel.setCompletedState(for: todoItem, isCompleted: isCompleted)
                     }
                 }
-                .toggleStyle(CheckBoxToggleStyle(priority: $todoItem.priority))
+                .toggleStyle(CheckBoxToggleStyle(priority: todoItem.priority))
                 .buttonStyle(PlainButtonStyle()) // In order to avoid triggering navigation when toggling
 
             NavigationLink(destination: AddEditTodoView(todoItem: todoItem)) {
@@ -32,7 +40,7 @@ struct ListItemView: View {
                     }
                 }
             }
-            .disabled(todoItem.isCompleted)
+            .disabled(isCompleted)
         }
         .padding(Constants.listItemViewPadding)
     }
@@ -44,7 +52,7 @@ struct ListItemView: View {
 }
 
 private struct CheckBoxToggleStyle: ToggleStyle {
-    @Binding var priority: Int
+    var priority: Int
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()

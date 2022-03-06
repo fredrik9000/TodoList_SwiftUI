@@ -13,7 +13,7 @@ struct ListItemView: View {
     // Using @State for the whole todoItem for some reason causes the list(in UI)
     // not to update itself with the latest values when saving from AddEditTodoView
     @State private var isCompleted: Bool
-    
+
     init(todoItem: TodoListInfo.TodoItem) {
         self.todoItem = todoItem
         self.isCompleted = todoItem.isCompleted
@@ -70,7 +70,6 @@ private struct CheckBoxToggleStyle: ToggleStyle {
 }
 
 struct ListItemView_Previews: PreviewProvider {
-    @State static var isAddingNewItem = false
     static var previews: some View {
         ListItemView(todoItem: TodoListInfo.TodoItem(
                         title: "Medium priority task",

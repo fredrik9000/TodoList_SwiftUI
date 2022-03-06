@@ -54,7 +54,7 @@ struct TodoListView: View {
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.stack)
     }
 
     private var deleteMenu: some View {

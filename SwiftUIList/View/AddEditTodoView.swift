@@ -151,7 +151,6 @@ struct AddEditTodoView: View {
 }
 
 struct AddEditTodoView_Previews: PreviewProvider {
-    @State static var isAddingNewItem = true
     static var previews: some View {
         NavigationView {
             AddEditTodoView(todoItem: TodoListInfo.TodoItem(

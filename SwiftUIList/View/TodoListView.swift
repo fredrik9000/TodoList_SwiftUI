@@ -10,6 +10,7 @@ import SwiftUI
 struct TodoListView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
     @State private var searchText = ""
+    @State private var isShowingDeleteItemsConfirmationDialog = false
 
     private var searchBinding: Binding<String> {
         Binding<String>(
@@ -45,8 +46,32 @@ struct TodoListView: View {
             .navigationTitle("Things to do")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    deleteMenu
+                    Button(role: .destructive) {
+                        isShowingDeleteItemsConfirmationDialog = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .disabled(viewModel.todoListIsEmpty)
+                    .confirmationDialog(
+                        "Are you sure you want to delete items?",
+                        isPresented: $isShowingDeleteItemsConfirmationDialog,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Remove completed items", role: .destructive) {
+                            withAnimation {
+                                viewModel.removeCompleted()
+                            }
+                        }
+                        .disabled(viewModel.todoListHasNoCompletedItems)
+
+                        Button("Remove all items", role: .destructive) {
+                            withAnimation {
+                                viewModel.removeAll()
+                            }
+                        }
+                    }
                 }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: AddEditTodoView(todoItem: TodoListInfo.TodoItem())) {
                         Image(systemName: "plus")
@@ -55,23 +80,6 @@ struct TodoListView: View {
             }
         }
         .navigationViewStyle(.stack)
-    }
-
-    private var deleteMenu: some View {
-        return Menu {
-            Button("Remove completed items") {
-                withAnimation {
-                    viewModel.removeCompleted()
-                }
-            }
-            Button("Remove all items") {
-                withAnimation {
-                    viewModel.removeAll()
-                }
-            }
-        } label: {
-            Label("Delete", systemImage: "trash")
-        }
     }
 
     private struct Constants {

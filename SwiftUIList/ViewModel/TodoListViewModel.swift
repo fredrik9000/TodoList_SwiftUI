@@ -23,6 +23,10 @@ class TodoListViewModel: ObservableObject {
         todoListInfo.todos.isEmpty
     }
 
+    var todoListHasNoCompletedItems: Bool {
+        todoListInfo.todos.filter { $0.isCompleted }.isEmpty
+    }
+
     func filteredListOfTodosByTitle(_ searchText: String) -> [TodoListInfo.TodoItem] {
         todoListInfo.todos.filter { searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased()) }.sorted { calculateSortedBy($0, $1) }
     }

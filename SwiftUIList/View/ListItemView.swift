@@ -9,25 +9,23 @@ import SwiftUI
 
 struct ListItemView: View {
     @EnvironmentObject var viewModel: TodoListViewModel
-    private var todoItem: TodoListInfo.TodoItem
-    // Using @State for the whole todoItem for some reason causes the list(in UI)
-    // not to update itself with the latest values when saving from AddEditTodoView
-    @State private var isCompleted: Bool
+    let todoItem: TodoListInfo.TodoItem
 
-    init(todoItem: TodoListInfo.TodoItem) {
-        self.todoItem = todoItem
-        self.isCompleted = todoItem.isCompleted
+    private var isCompletedBinding: Binding<Bool> {
+        Binding<Bool>(
+            get: { todoItem.isCompleted },
+            set: { isCompleted in
+                withAnimation {
+                    viewModel.setCompletedState(for: todoItem, isCompleted: isCompleted)
+                }
+            }
+        )
     }
 
     var body: some View {
         HStack {
-            Toggle("Toggle completed", isOn: $isCompleted)
+            Toggle("Toggle completed", isOn: isCompletedBinding)
                 .labelsHidden()
-                .onChange(of: isCompleted) { _ in
-                    withAnimation {
-                        viewModel.setCompletedState(for: todoItem, isCompleted: isCompleted)
-                    }
-                }
                 .toggleStyle(CheckBoxToggleStyle(priority: todoItem.priority))
                 .buttonStyle(PlainButtonStyle()) // In order to avoid triggering navigation when toggling
 
@@ -40,7 +38,7 @@ struct ListItemView: View {
                     }
                 }
             }
-            .disabled(isCompleted)
+            .disabled(todoItem.isCompleted)
         }
         .padding(Constants.listItemViewPadding)
     }
@@ -53,6 +51,7 @@ struct ListItemView: View {
 
 private struct CheckBoxToggleStyle: ToggleStyle {
     var priority: Int
+    
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
@@ -71,15 +70,21 @@ private struct CheckBoxToggleStyle: ToggleStyle {
 
 struct ListItemView_Previews: PreviewProvider {
     static var previews: some View {
-        ListItemView(todoItem: TodoListInfo.TodoItem(
-                        title: "Medium priority task",
-                        description: "Description for medium priority task",
-                        priority: Priority.medium.rawValue))
+        ListItemView(
+            todoItem: TodoListInfo.TodoItem(
+                title: "Medium priority task",
+                description: "Description for medium priority task",
+                priority: Priority.medium.rawValue
+            )
+        )
 
-        ListItemView(todoItem: TodoListInfo.TodoItem(
-                        title: "Completed task",
-                        description: "Description for completed priority task",
-                        priority: Priority.medium.rawValue,
-                        isCompleted: true))
+        ListItemView(
+            todoItem: TodoListInfo.TodoItem(
+                title: "Completed task",
+                description: "Description for completed priority task",
+                priority: Priority.medium.rawValue,
+                isCompleted: true
+            )
+        )
     }
 }

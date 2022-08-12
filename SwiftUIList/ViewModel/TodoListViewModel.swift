@@ -28,7 +28,9 @@ class TodoListViewModel: ObservableObject {
     }
 
     func filteredListOfTodosByTitle(_ searchText: String) -> [TodoListInfo.TodoItem] {
-        todoListInfo.todos.filter { searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased()) }.sorted { calculateSortedBy($0, $1) }
+        todoListInfo.todos.filter {
+            searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased())
+        }.sorted { calculateSortedBy($0, $1) }
     }
 
     func upsert(editedItem: TodoListInfo.TodoItem) {
@@ -37,6 +39,7 @@ class TodoListViewModel: ObservableObject {
             if todoListInfo.todos[itemIndex].hasNotification && (!editedItem.hasNotification || todoListInfo.todos[itemIndex].dueDate != editedItem.dueDate) {
                 removeNotificationIfPresent(for: todoListInfo.todos[itemIndex])
             }
+
             addNotification(for: editedItem)
             todoListInfo.todos[itemIndex] = editedItem
         } else {
@@ -47,10 +50,12 @@ class TodoListViewModel: ObservableObject {
 
     func remove(indexSet: IndexSet) {
         // Make sure the list is sorted, as it is in the UI
-        todoListInfo.todos.sort(by: { calculateSortedBy($0, $1) })
+        todoListInfo.todos.sort { calculateSortedBy($0, $1) }
+
         indexSet.forEach {
             removeNotificationIfPresent(for: todoListInfo.todos[$0])
         }
+
         todoListInfo.todos.remove(atOffsets: indexSet)
     }
 
@@ -69,12 +74,14 @@ class TodoListViewModel: ObservableObject {
         todoListInfo.todos.forEach {
             removeNotificationIfPresent(for: $0)
         }
+
         todoListInfo.todos = []
     }
 
     private func removeNotificationIfPresent(for item: TodoListInfo.TodoItem) {
         if item.hasNotification && item.dueDateIsValid {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [item.notificationId])
+
             if let itemIndex = todoListInfo.index(of: item) {
                 todoListInfo.todos[itemIndex].hasNotification = false
             }
@@ -90,15 +97,20 @@ class TodoListViewModel: ObservableObject {
         content.sound = .default
 
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: item.notificationId,
-                                  content: content,
-                                  trigger: UNCalendarNotificationTrigger(
-                                    dateMatching: DateComponents(year: item.dueDate.year,
-                                                                 month: item.dueDate.month,
-                                                                 day: item.dueDate.day,
-                                                                 hour: item.dueDate.hour,
-                                                                 minute: item.dueDate.minute),
-                                    repeats: false))
+            UNNotificationRequest(
+                identifier: item.notificationId,
+                content: content,
+                trigger: UNCalendarNotificationTrigger(
+                    dateMatching: DateComponents(
+                        year: item.dueDate.year,
+                        month: item.dueDate.month,
+                        day: item.dueDate.day,
+                        hour: item.dueDate.hour,
+                        minute: item.dueDate.minute
+                    ),
+                    repeats: false
+                )
+            )
         ) { (error) in
             if error != nil {
                 // Some error happened, resetting notification id
@@ -112,6 +124,7 @@ class TodoListViewModel: ObservableObject {
     func setCompletedState(for item: TodoListInfo.TodoItem, isCompleted: Bool) {
         if let itemIndex = todoListInfo.index(of: item) {
             todoListInfo.todos[itemIndex].isCompleted = isCompleted
+
             if isCompleted {
                 removeNotificationIfPresent(for: item)
             }

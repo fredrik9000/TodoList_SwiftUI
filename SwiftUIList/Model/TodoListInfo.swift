@@ -36,11 +36,15 @@ struct TodoListInfo: Codable {
             var minute: Int
 
             func toSwiftDate() -> Date {
-                Calendar.current.date(from: DateComponents(year: year,
-                                                                  month: month,
-                                                                  day: day,
-                                                                  hour: hour,
-                                                                  minute: minute))!
+                Calendar.current.date(
+                    from: DateComponents(
+                        year: year,
+                        month: month,
+                        day: day,
+                        hour: hour,
+                        minute: minute
+                    )
+                )!
             }
 
             func fromSwiftDate(_ date: Date) -> TodoListInfo.TodoItem.DueDate {
@@ -55,11 +59,14 @@ struct TodoListInfo: Codable {
             }
 
             func formattedDateString() -> String {
-                let components = DateComponents(year: self.year,
-                                                month: self.month,
-                                                day: self.day,
-                                                hour: self.hour,
-                                                minute: self.minute)
+                let components = DateComponents(
+                    year: self.year,
+                    month: self.month,
+                    day: self.day,
+                    hour: self.hour,
+                    minute: self.minute
+                )
+
                 let formatter = DateFormatter()
                 formatter.dateFormat = "MMMM dd, yyyy 'at' HH:mm"
                 return formatter.string(from: Calendar(identifier: .gregorian).date(from: components)!)
@@ -68,7 +75,7 @@ struct TodoListInfo: Codable {
     }
 
     func index(of item: TodoItem) -> Int? {
-        todos.firstIndex(where: { $0.id == item.id })
+        todos.firstIndex { $0.id == item.id }
     }
 
     var json: Data? {

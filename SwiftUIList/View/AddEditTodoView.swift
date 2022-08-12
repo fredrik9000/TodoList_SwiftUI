@@ -153,10 +153,13 @@ struct AddEditTodoView: View {
 struct AddEditTodoView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            AddEditTodoView(todoItem: TodoListInfo.TodoItem(
-                                title: "Medium priority task",
-                                description: "Description for medium priority task",
-                                priority: Priority.medium.rawValue))
+            AddEditTodoView(
+                todoItem: TodoListInfo.TodoItem(
+                    title: "Medium priority task",
+                    description: "Description for medium priority task",
+                    priority: Priority.medium.rawValue
+                )
+            )
         }
     }
 }

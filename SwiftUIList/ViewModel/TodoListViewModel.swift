@@ -35,8 +35,7 @@ class TodoListViewModel: ObservableObject {
 
     func upsert(editedItem: TodoListInfo.TodoItem) {
         if let itemIndex = todoListInfo.index(of: editedItem) {
-            // Remove existing notification when updating with a new one or simply removing the existing
-            if todoListInfo.todos[itemIndex].hasNotification && (!editedItem.hasNotification || todoListInfo.todos[itemIndex].dueDate != editedItem.dueDate) {
+            if hasUpdatedOrRemovedExistingNotification(existingItem: todoListInfo.todos[itemIndex], editedItem: editedItem) {
                 removeNotificationIfPresent(for: todoListInfo.todos[itemIndex])
             }
 
@@ -46,6 +45,13 @@ class TodoListViewModel: ObservableObject {
             addNotification(for: editedItem)
             todoListInfo.todos.append(editedItem)
         }
+    }
+
+    private func hasUpdatedOrRemovedExistingNotification(
+        existingItem: TodoListInfo.TodoItem,
+        editedItem: TodoListInfo.TodoItem
+    ) -> Bool {
+        return existingItem.hasNotification && (!editedItem.hasNotification || existingItem.dueDate != editedItem.dueDate)
     }
 
     func remove(indexSet: IndexSet) {

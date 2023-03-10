@@ -29,7 +29,7 @@ class TodoListViewModel: ObservableObject {
 
     func filteredListOfTodosByTitle(_ searchText: String) -> [TodoListInfo.TodoItem] {
         todoListInfo.todos.filter {
-            searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased())
+            searchText.isEmpty || $0.title.localizedCaseInsensitiveContains(searchText)
         }.sorted { calculateSortedBy($0, $1) }
     }
 
@@ -66,12 +66,12 @@ class TodoListViewModel: ObservableObject {
     }
 
     func removeCompleted() {
-        todoListInfo.todos = todoListInfo.todos.filter {
+        todoListInfo.todos.removeAll {
             if $0.isCompleted {
                 removeNotificationIfPresent(for: $0)
-                return false
-            } else {
                 return true
+            } else {
+                return false
             }
         }
     }
